@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ARCalories</string>
+    <string name="upload_button">Upload</string>
 </resources>

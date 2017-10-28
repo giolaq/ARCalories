@@ -8,6 +8,7 @@ import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -36,6 +37,19 @@ class MainActivity : AppCompatActivity() {
         storage = FirebaseStorage.getInstance()
         storageReference = storage!!.getReference()
         firestoreDb = FirebaseFirestore.getInstance()
+
+        firestoreDb!!.collection("images").document(filePath.toString())
+                .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
+                    if ( firebaseFirestoreException != null) {
+                        Log.e("MainActivity", firebaseFirestoreException.localizedMessage)
+                    } else {
+                        if (documentSnapshot!!.exists()) {
+                            Log.d("MainActivity", documentSnapshot.data.toString())
+                        } else {
+                            Log.d("MainActivity", "Waiting for Vision API data...")
+                        }
+                    }
+                }
     }
 
 

@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity() {
     private val PICK_IMAGE_REQUEST = 1234
     private var filePath: Uri? = null
 
+    private var imageRef: StorageReference? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         var binding : ActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -38,9 +40,12 @@ class MainActivity : AppCompatActivity() {
         storageReference = storage!!.getReference()
         firestoreDb = FirebaseFirestore.getInstance()
 
-        firestoreDb!!.collection("images").document(filePath.toString())
+    }
+
+    private fun retrieveVisionAPIData() {
+        firestoreDb!!.collection("images").document(imageRef!!.name)
                 .addSnapshotListener { documentSnapshot, firebaseFirestoreException ->
-                    if ( firebaseFirestoreException != null) {
+                    if (firebaseFirestoreException != null) {
                         Log.e("MainActivity", firebaseFirestoreException.localizedMessage)
                     } else {
                         if (documentSnapshot!!.exists()) {
@@ -74,16 +79,18 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(Intent.createChooser(intent, "Select Pictures"), PICK_IMAGE_REQUEST)
     }
 
+
     private fun uploadImage() {
         if (filePath != null) {
             val progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleSmall)
             progressBar.visibility = View.VISIBLE
 
-            val imageRef = storageReference!!.child("images/" + UUID.randomUUID().toString())
-            imageRef.putFile(filePath!!)
-                    .addOnSuccessListener {
+            imageRef = storageReference!!.child("images/" + UUID.randomUUID().toString())
+            imageRef!!.putFile(filePath!!)
+                    .addOnSuccessListener { result ->
                         progressBar.visibility = View.GONE
                         Toast.makeText(applicationContext, "Image uploaded", Toast.LENGTH_SHORT ).show()
+                        retrieveVisionAPIData()
                     }
                     .addOnFailureListener {
                         progressBar.visibility = View.GONE
